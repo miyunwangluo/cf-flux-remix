@@ -6,14 +6,8 @@ export class ImageGenerationService {
 
 async generateImage(prompt: string, model: string, size: string, numSteps: number): Promise<{ prompt: string, translatedPrompt: string, image: string }> {
   console.log("Generating image with params:", { prompt, model, size, numSteps });
-
-  // 先翻译用户提供的原始提示词
-  const translatedPrompt = await this.translatePrompt(prompt);
-  console.log("Translated prompt:", translatedPrompt);
-
-  // 将翻译后的提示词插入填色图模板
   const coloringBookPromptTemplate = "You are a teacher for young kids (3 years old). In the style of a coloring book for kids, generate a simple, black and white line drawing for kids to color: {prompt}. Never add texts in the image.";
-  const finalPrompt = coloringBookPromptTemplate.replace('{prompt}', translatedPrompt);
+  const finalPrompt = coloringBookPromptTemplate.replace('{prompt}', prompt);
 
   const isFluxModel = model === this.config.CUSTOMER_MODEL_MAP["FLUX.1-Schnell-CF"];
   let imageBase64;
