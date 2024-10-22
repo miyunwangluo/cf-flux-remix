@@ -187,6 +187,4 @@ print(f"生成的图像数据: {result['image'][:50]}...") # 只打印前50个�
 4. 查看 Cloudflare Workers 的日志以获取更详细的错误信息。
 5. The name in `wrangler.toml` must match the name of your Worker.
 
-如果问题仍然存在，请开一个 issue 并提供详细的错误信息和复现步骤。
-
 ### [视频教程](https://www.bilibili.com/video/BV1Wz2NYyEmW/)
