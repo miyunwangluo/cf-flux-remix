@@ -4,27 +4,34 @@ import { Config } from '../config';
 export class ImageGenerationService {
   constructor(private config: Config) {}
 
-  async generateImage(prompt: string, model: string, size: string, numSteps: number): Promise<{ prompt: string, translatedPrompt: string, image: string }> {
-    console.log("Generating image with params:", { prompt, model, size, numSteps });
-    const translatedPrompt = await this.translatePrompt(prompt);
-    console.log("Translated prompt:", translatedPrompt);
-    const isFluxModel = model === this.config.CUSTOMER_MODEL_MAP["FLUX.1-Schnell-CF"];
-    let imageBase64;
-    try {
-      imageBase64 = isFluxModel ? 
-        await this.generateFluxImage(model, translatedPrompt, numSteps) :
-        await this.generateStandardImage(model, translatedPrompt, size, numSteps);
-    } catch (error) {
-      console.error("Error in image generation:", error);
-      throw error;
-    }
+async generateImage(prompt: string, model: string, size: string, numSteps: number): Promise<{ prompt: string, translatedPrompt: string, image: string }> {
+  console.log("Generating image with params:", { prompt, model, size, numSteps });
 
-    return {
-      prompt,
-      translatedPrompt,
-      image: imageBase64
-    };
+  // 先翻译用户提供的原始提示词
+  const translatedPrompt = await this.translatePrompt(prompt);
+  console.log("Translated prompt:", translatedPrompt);
+
+  // 将翻译后的提示词插入填色图模板
+  const coloringBookPromptTemplate = "You are a teacher for young kids (3 years old). In the style of a coloring book for kids, generate a simple, black and white line drawing for kids to color: {prompt}. Never add texts in the image.";
+  const finalPrompt = coloringBookPromptTemplate.replace('{prompt}', translatedPrompt);
+
+  const isFluxModel = model === this.config.CUSTOMER_MODEL_MAP["FLUX.1-Schnell-CF"];
+  let imageBase64;
+  try {
+    imageBase64 = isFluxModel ? 
+      await this.generateFluxImage(model, finalPrompt, numSteps) :
+      await this.generateStandardImage(model, finalPrompt, size, numSteps);
+  } catch (error) {
+    console.error("Error in image generation:", error);
+    throw error;
   }
+
+  return {
+    prompt, // 返回用户最初的提示词
+    translatedPrompt: finalPrompt, // 返回组合后的最终提示词
+    image: imageBase64
+  };
+}
 
   private async translatePrompt(prompt: string): Promise<string> {
     if (!this.config.CF_IS_TRANSLATE) {
